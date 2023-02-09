@@ -26,7 +26,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi/validate"
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/stretchr/testify/require"
@@ -1556,8 +1555,6 @@ containerEdits:
 				cache *Cache
 				other *Cache
 			)
-
-			SetSpecValidator(validate.WithNamedSchema("builtin"))
 
 			if len(tc.invalid) != 0 {
 				dir, err = createSpecDirs(t, nil, nil)
