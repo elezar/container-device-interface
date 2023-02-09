@@ -8,7 +8,7 @@ GO_VET   := $(GO_CMD) vet
 
 CDI_PKG  := $(shell grep ^module go.mod | sed 's/^module *//g')
 
-BINARIES := bin/cdi bin/validate
+BINARIES :=
 
 ifneq ($(V),1)
   Q := @
@@ -42,18 +42,6 @@ vet:
 	$(Q)$(GO_VET) ./...
 
 #
-# build targets
-#
-
-bin/%:
-	$(Q)echo "Building $@..."; \
-	$(GO_BUILD) -o $@ ./$(subst bin/,cmd/,$@)
-
-bin/cdi:
-	$(Q)echo "Building $@..."; \
-	cd cmd/cdi; $(GO_BUILD) -o $(abspath $@) .
-
-#
 # cleanup targets
 #
 
@@ -74,7 +62,7 @@ test-gopkgs:
 	$(Q)$(GO_TEST) ./...
 
 # tests for CDI Spec JSON schema
-test-schema: bin/validate
+test-schema: schemas
 	$(Q)echo "Building in schema..."; \
 	$(MAKE) -C schema test
 
@@ -83,13 +71,4 @@ test-schema: bin/validate
 # dependencies
 #
 
-bin/validate: cmd/validate/validate.go $(wildcard schema/*.json)
-
-# quasi-automatic dependency for bin/cdi
-bin/cdi: $(wildcard cmd/cdi/*.go cmd/cdi/cmd/*.go) $(shell \
-            for dir in \
-                $$(cd ./cmd/cdi; $(GO_CMD) list -f '{{ join .Deps "\n"}}' ./... | \
-                      grep $(CDI_PKG)/pkg/ | \
-                      sed 's:$(CDI_PKG):.:g'); do \
-                find $$dir -name \*.go; \
-            done | sort | uniq)
+schemas: $(wildcard schema/*.json)
