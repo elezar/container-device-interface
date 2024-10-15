@@ -1,6 +1,3 @@
-//go:build !linux
-// +build !linux
-
 /*
    Copyright © 2022 The CDI Authors
 
@@ -17,23 +14,35 @@
    limitations under the License.
 */
 
-package cdi
+package producer
 
 import (
+	"fmt"
 	"os"
-	"path/filepath"
+
+	"golang.org/x/sys/unix"
 )
 
 // Rename src to dst, both relative to the directory dir. If dst already exists
 // refuse renaming with an error unless overwrite is explicitly asked for.
 func renameIn(dir, src, dst string, overwrite bool) error {
-	src = filepath.Join(dir, src)
-	dst = filepath.Join(dir, dst)
+	var flags uint
 
-	_, err := os.Stat(dst)
-	if err == nil && !overwrite {
-		return os.ErrExist
+	dirf, err := os.Open(dir)
+	if err != nil {
+		return fmt.Errorf("rename failed: %w", err)
+	}
+	defer dirf.Close()
+
+	if !overwrite {
+		flags = unix.RENAME_NOREPLACE
 	}
 
-	return os.Rename(src, dst)
+	dirFd := int(dirf.Fd())
+	err = unix.Renameat2(dirFd, src, dirFd, dst, flags)
+	if err != nil {
+		return fmt.Errorf("rename failed: %w", err)
+	}
+
+	return nil
 }
