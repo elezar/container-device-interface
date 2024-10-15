@@ -17,8 +17,10 @@
 package producer
 
 import (
+	"fmt"
 	"path/filepath"
 
+	"tags.cncf.io/container-device-interface/pkg/cdi/producer/validator"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
@@ -26,12 +28,14 @@ import (
 type Producer struct {
 	format       specFormat
 	failIfExists bool
+	validator    specValidator
 }
 
 // New creates a new producer with the supplied options.
 func New(opts ...Option) (*Producer, error) {
 	p := &Producer{
-		format: DefaultSpecFormat,
+		format:    DefaultSpecFormat,
+		validator: validator.Default,
 	}
 	for _, opt := range opts {
 		err := opt(p)
@@ -47,8 +51,11 @@ func New(opts ...Option) (*Producer, error) {
 // extension takes precedence over the format with which the Producer was
 // configured.
 func (p *Producer) SaveSpec(s *cdi.Spec, filename string) (string, error) {
-	filename = p.normalizeFilename(filename)
+	if err := p.Validate(s); err != nil {
+		return "", fmt.Errorf("spec validation failed: %w", err)
+	}
 
+	filename = p.normalizeFilename(filename)
 	sp := spec{
 		Spec:   s,
 		format: p.specFormatFromFilename(filename),
@@ -59,6 +66,15 @@ func (p *Producer) SaveSpec(s *cdi.Spec, filename string) (string, error) {
 	}
 
 	return filename, nil
+}
+
+// Validate performs a validation on a CDI spec using the configured validator.
+// If no validator is configured, the spec is considered unconditionally valid.
+func (p *Producer) Validate(s *cdi.Spec) error {
+	if p == nil || p.validator == nil {
+		return nil
+	}
+	return p.validator.Validate(s)
 }
 
 // specFormatFromFilename determines the CDI spec format for the given filename.

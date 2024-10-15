@@ -16,7 +16,11 @@
 
 package producer
 
-import "fmt"
+import (
+	"fmt"
+
+	"tags.cncf.io/container-device-interface/pkg/cdi/producer/validator"
+)
 
 // An Option defines a functional option for constructing a producer.
 type Option func(*Producer) error
@@ -30,6 +34,17 @@ func WithSpecFormat(format specFormat) Option {
 		default:
 			return fmt.Errorf("invalid CDI spec format %v", format)
 		}
+		return nil
+	}
+}
+
+// WithSpecValidator sets a validator to be used when writing an output spec.
+func WithSpecValidator(v specValidator) Option {
+	return func(p *Producer) error {
+		if v == nil {
+			v = validator.Disabled
+		}
+		p.validator = v
 		return nil
 	}
 }

@@ -14,23 +14,16 @@
    limitations under the License.
 */
 
-package producer
+package validator
 
-import cdi "tags.cncf.io/container-device-interface/specs-go"
-
-type specFormat string
-
-const (
-	// DefaultSpecFormat defines the default encoding used to write CDI specs.
-	DefaultSpecFormat = SpecFormatYAML
-
-	// SpecFormatJSON defines a CDI spec formatted as JSON.
-	SpecFormatJSON = specFormat(".json")
-	// SpecFormatYAML defines a CDI spec formatted as YAML.
-	SpecFormatYAML = specFormat(".yaml")
+import (
+	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
-// a specValidator is used to validate a CDI spec.
-type specValidator interface {
-	Validate(*cdi.Spec) error
+// A disabledValidator performs no validation.
+type disabledValidator string
+
+// Validate always passes for a disabledValidator.
+func (v disabledValidator) Validate(*cdi.Spec) error {
+	return nil
 }
