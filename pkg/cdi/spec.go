@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	oci "github.com/opencontainers/runtime-spec/specs-go"
@@ -244,7 +243,7 @@ func validateSpec(raw *cdi.Spec) error {
 // combination. Therefore it cannot be used as such to generate multiple
 // Spec file names for a single vendor and class.
 func GenerateSpecName(vendor, class string) string {
-	return vendor + "-" + class
+	return producer.GenerateSpecName(vendor, class)
 }
 
 // GenerateTransientSpecName generates a vendor+class scoped transient
@@ -264,8 +263,7 @@ func GenerateSpecName(vendor, class string) string {
 // The caller can append the desired extension to choose a particular
 // encoding. Otherwise WriteSpec() will use its default encoding.
 func GenerateTransientSpecName(vendor, class, transientID string) string {
-	transientID = strings.ReplaceAll(transientID, "/", "_")
-	return GenerateSpecName(vendor, class) + "_" + transientID
+	return producer.GenerateTransientSpecName(vendor, class, transientID)
 }
 
 // GenerateNameForSpec generates a name for the given Spec using
@@ -274,12 +272,7 @@ func GenerateTransientSpecName(vendor, class, transientID string) string {
 // the Spec does not contain a valid vendor or class, it returns
 // an empty name and a non-nil error.
 func GenerateNameForSpec(raw *cdi.Spec) (string, error) {
-	vendor, class := parser.ParseQualifier(raw.Kind)
-	if vendor == "" {
-		return "", fmt.Errorf("invalid vendor/class %q in Spec", raw.Kind)
-	}
-
-	return GenerateSpecName(vendor, class), nil
+	return producer.GenerateNameForSpec(raw)
 }
 
 // GenerateNameForTransientSpec generates a name for the given transient
@@ -288,10 +281,5 @@ func GenerateNameForSpec(raw *cdi.Spec) (string, error) {
 // If the Spec does not contain a valid vendor or class, it returns an
 // an empty name and a non-nil error.
 func GenerateNameForTransientSpec(raw *cdi.Spec, transientID string) (string, error) {
-	vendor, class := parser.ParseQualifier(raw.Kind)
-	if vendor == "" {
-		return "", fmt.Errorf("invalid vendor/class %q in Spec", raw.Kind)
-	}
-
-	return GenerateTransientSpecName(vendor, class, transientID), nil
+	return producer.GenerateNameForTransientSpec(raw, transientID)
 }
