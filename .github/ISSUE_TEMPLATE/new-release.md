@@ -27,6 +27,6 @@ it accordingly for future releases.
 - [ ] Merge the PR on sufficient approval.
 - [ ] Create a `vX.Y.Z` tag.
 - [ ] (*for specification changes only*) Create a `specs-go/vX.Y.W` tag. (for the first spec version `W` will be the same as `Z`)
-- [ ] Create a GitHub release form the `vX.Y.Z` tag.
+- [ ] Create a GitHub release from the `vX.Y.Z` tag.
 - [ ] (*for specification changes only*) Create a GitHub release from the `specs-go/vX.Y.Z` tag.
 - [ ] Close the release issue.
