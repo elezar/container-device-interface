@@ -411,6 +411,34 @@ func (c *Cache) ListClasses() []string {
 	return classes
 }
 
+// ListKinds lists all CDI kinds (vendor/class) known to the cache.
+// This might trigger a cache refresh, in which case any errors encountered can
+// be obtained using GetErrors().
+func (c *Cache) ListKinds() []string {
+	var (
+		cmap  = map[string]struct{}{}
+		kinds []string
+	)
+
+	c.Lock()
+	defer c.Unlock()
+
+	_, _ = c.refreshIfRequired(false) // we record but ignore errors
+
+	for _, specs := range c.specs {
+		for _, spec := range specs {
+			cmap[spec.Kind] = struct{}{}
+		}
+	}
+	for class := range cmap {
+		kinds = append(kinds, class)
+	}
+	sort.Strings(kinds)
+
+	return kinds
+
+}
+
 // GetVendorSpecs returns all specs for the given vendor. Might trigger a cache
 // refresh, in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) GetVendorSpecs(vendor string) []*Spec {
